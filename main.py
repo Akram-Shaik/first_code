@@ -30,7 +30,9 @@ def run_my_first_pipeline():
 
     # Fill missing salaries with the average salary so the math doesn't break
     df['salary'] = df['salary'].fillna(df['salary'].mean())
-
+    # Clean name
+    df['name'].str.strip()
+    df['name'].str.title()
 
     conn.close()
     print("\n🏆 Pipeline finished successfully!")
