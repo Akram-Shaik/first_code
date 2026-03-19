@@ -7,6 +7,7 @@ This project extracts employee data from a CSV, cleans it using Pandas, and load
 - **Language:** Python 3.14
 - **Libraries:** Pandas, SQLite3
 - **Tools:** VS Code, Git
+--Version Control : Git/GitHub
 
 ## How to Run
 1. Activate venv: `.\venv\Scripts\activate`
