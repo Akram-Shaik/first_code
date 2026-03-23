@@ -9,54 +9,58 @@ def clean_name(full_name):
     return full_name
 
 def run_my_first_pipeline():
-    print("🚀 Pipeline Started...")
+    try:
+        print("🚀 Pipeline Started...")
 
-    # 1. EXTRACT: Read the CSV file
-    df = pd.read_csv('data.csv')
-    print("✅ Data extracted from CSV.")
+        # 1. EXTRACT: Read the CSV file
+        df = pd.read_csv('data.csv')
+        print("✅ Data extracted from CSV.")
 
-    # 2. TRANSFORM (CLEAN IMMEDIATELY)
-    # Apply our custom clean_name function to every row
-    df['name'] = df['name'].apply(clean_name)
-    df['name'] = df['name'].str.title().str.strip()
+        # 2. TRANSFORM (CLEAN IMMEDIATELY)
+        # Apply our custom clean_name function to every row
+        df['name'] = df['name'].apply(clean_name)
+        df['name'] = df['name'].str.title().str.strip()
 
-    # Fill missing salaries with the average salary so the math doesn't break
-    df['salary'] = df['salary'].fillna(df['salary'].mean())
+        # Fill missing salaries with the average salary so the math doesn't break
+        df['salary'] = df['salary'].fillna(df['salary'].mean())
 
-    # 3.Filter (Using the now-clean data) and give them a 10% raise
-    # This is a classic "Data Engineering" task
-    eng_staff = df[df['department'] == 'Engineering'].copy()
-    eng_staff['salary'] = eng_staff['salary'] * 1.20
-    print("✅ Transformation complete: Engineering salaries increased by 20%.")
+        # 3.Filter (Using the now-clean data) and give them a 10% raise
+        # This is a classic "Data Engineering" task
+        eng_staff = df[df['department'] == 'Engineering'].copy()
+        eng_staff['salary'] = eng_staff['salary'] * 1.20
+        print("✅ Transformation complete: Engineering salaries increased by 20%.")
 
-    # 4. LOAD: Save this into a SQL Database
-    # This creates a file called 'company.db' automatically
-    conn = sqlite3.connect('company.db')
-    eng_staff.to_sql('engineering_promotions', conn, if_exists='replace', index=False)
-    print("✅ Data loaded into SQL (Engineering_promotions table).")
+        # 4. LOAD: Save this into a SQL Database
+        # This creates a file called 'company.db' automatically
+        conn = sqlite3.connect('company.db')
+        eng_staff.to_sql('engineering_promotions', conn, if_exists='replace', index=False)
+        print("✅ Data loaded into SQL (Engineering_promotions table).")
 
-    # 5. VERIFY: Query the SQL database to prove it worked
-    print("\n--- Final SQL Report (High Earners) ---")
-    report = pd.read_sql_query("SELECT name, salary FROM engineering_promotions WHERE salary > 80000", conn)
-    print(report)
+        # 5. VERIFY: Query the SQL database to prove it worked
+        print("\n--- Final SQL Report (High Earners) ---")
+        report = pd.read_sql_query("SELECT name, salary FROM engineering_promotions WHERE salary > 80000", conn)
+        print(report)
 
-    # Strip extra spaces from names
-    df['name'] = df['name'].str.strip().str.title() 
-  
+        # Strip extra spaces from names
+        df['name'] = df['name'].str.strip().str.title() 
     
-    #Second piece of code starts here group by()
-    dept_summary = df.groupby('department')['salary'].sum().reset_index()
+        
+        #Second piece of code starts here group by()
+        dept_summary = df.groupby('department')['salary'].sum().reset_index()
 
-    # 2. LOAD: Save this summary into a NEW SQL table
-    dept_summary.to_sql('department_stats', conn, if_exists='replace', index=False)
+        # 2. LOAD: Save this summary into a NEW SQL table
+        dept_summary.to_sql('department_stats', conn, if_exists='replace', index=False)
 
-    print("✅ Department summary created and loaded to SQL.")
+        print("✅ Department summary created and loaded to SQL.")
 
-    # 3. VERIFY: Query the new table
-    print("\n--- Department Salary Spend ---")
-    stats_report = pd.read_sql_query("SELECT * FROM department_stats", conn)
-    print(stats_report)
-
+        # 3. VERIFY: Query the new table
+        print("\n--- Department Salary Spend ---")
+        stats_report = pd.read_sql_query("SELECT * FROM department_stats", conn)
+        print(stats_report)
+    except Exception as e:
+        # --- THE SAFETY NET ---
+        print(f"❌ STOP! Something went wrong: {e}")
+        print("💡 Hint: Check if your 'data.csv' is missing a column or has a typo.")
 
     conn.close()
     print("\n🏆 Pipeline finished successfully!")
